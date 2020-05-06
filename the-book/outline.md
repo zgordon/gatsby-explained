@@ -52,20 +52,26 @@
    - Featured images
    - PROJECT: Add images to pages and featured image to blog
 
-8. Gatsby Plugins
+8. Styling Gatsby Sites
+
+   - Options for styling
+   - Which is recommended?
+   - PROJECT: Add styling
+
+9. Gatsby Plugins
 
    - What are plugins
    - Types of plugins
    - PROJECT: Add some plugins for various reasons, SEO, analytics, forms, comments, etc.
 
-9. Deploying a Gatsby Project
+10. Deploying a Gatsby Project
 
-   - What is required
-   - How to deploy
-   - Continuous deployment
-   - PROJECT: Deploy the site
+    - What is required
+    - How to deploy
+    - Continuous deployment
+    - PROJECT: Deploy the site
 
-10. Taking Gatsby Further
+11. Taking Gatsby Further
 
     - What more it can do
     - Themes
