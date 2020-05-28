@@ -1,4 +1,4 @@
-1. A High Level Overview
+1. An Introduction to Gatsby
 
    - What is Gatsby?
      - What is Core
@@ -24,7 +24,9 @@
 4. Building Pages in Gatsby
 
    - Static pages
-   - Dynamically created pages
+   - Dynamically created pages architecture
+   - Get pages from Markdown
+   - Add block components
    - PROJECT: Build a basic pages for our brochure site
 
 5. GraphQL and Gatsby
