@@ -303,6 +303,7 @@ Great a page called `/src/pages/image-test.js` with the following code to start:
 
 ```
 import React from "react"
+import { graphql } from "gatsby"
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
@@ -311,12 +312,440 @@ const ImageTest = () => (
   <Layout>
     <SEO title="Image Test" />
     <h1>Image Test</h1>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sodales
+        sollicitudin placerat.
+      </p>
+      <p>
+        Fusce feugiat gravida magna nec accumsan. Quisque at mi lacinia, vulputate urna quis, ultricies ex. Maecenas mattis sapien et enim congue, nec rutrum risus commodo. 
+      </p>
+      <p>
+        Donec ante diam, ullamcorper non accumsan et, bibendum vel sapien. Phasellus pharetra mi venenatis orci lobortis tincidunt ut ut lorem. Phasellus iaculis, odio quis blandit maximus, velit lacus semper quam,
+        non vestibulum tortor purus at lacus.
+      </p>
+      <p>
+        Donec placerat neque at ipsum cursus, vitae vehicula est lacinia.Aliquam blandit ipsum eu tincidunt volutpat. Ut iaculis mattis turpis. Maecenas luctus ex nec risus molestie dapibus. Vestibulum nisl neque, pretium vitae efficitur at, accumsan non dolor. Ut posuere est nisl, id suscipit erat finibus sit amet.
+      </p>
   </Layout>
 )
 
 export default ImageTest
 ```
 
-Now, add the `Gatsby-icon.png` image to your `/src/images/` folder.  You can find this file in the completed code for this chapter.
+You can copy in your own lorem ipsum dummy text or get it from the completed example code for the chapter.
 
-Import this file in the following 
+Now, make sure you have a `gatsby-icon.png` and `alan-carrillo-HIghIy9i0aY-unsplash.jpg` image to your `/src/images/` folder.  You can find these files in the completed code as well.  (Credit to Alan Carrillo for the canyons photo).
+
+Now we are going to write two image queries at the bottom of the page.  One for a fixed version of the Gatsby icon and one for a fluid version of the canyon photo from Alan.
+
+Add the following query to the bottom of the `image-test.js` page.
+
+```
+export const imageTestQuery = graphql`
+  query {
+    canyons: file(
+      relativePath: { eq: "alan-carrillo-HIghIy9i0aY-unsplash.jpg" }
+    ) {
+      childImageSharp {
+        fluid(maxWidth: 1200) {
+          ...GatsbyImageSharpFluid
+        }
+      }
+    }
+    gatsbyIcon: file(relativePath: { eq: "gatsby-icon.png" }) {
+      childImageSharp {
+        fixed(width: 200, height: 200) {
+          ...GatsbyImageSharpFixed
+        }
+      }
+    }
+  }
+`
+```
+
+Notice that we are simply including our two image queries side by side.  One of the great things about GraphQL is that you can make multiple independent queries in one request.
+
+This will get passed into our `ImageTest` component as a `data` object on props.  So we need to update our component with the following so we have easy access to the data from this query:
+
+```
+const ImageTest = ({ data }) => (
+  // Stays the same for now.
+)
+```
+
+Next we will import the Gatsby `Img` component at the top of our file:
+
+```
+import React from "react"
+import { graphql } from "gatsby"
+import Img from "gatsby-image"
+``` 
+
+Now we can add our images to our page.  We will add our fluid canyons image at the top of the page above the `h1`.
+
+```
+<SEO title="Image Test" />
+<div>
+  <Img fluid={data.canyons.childImageSharp.fluid} />
+</div>
+<h1>Image Test</h1>
+```
+
+We have wrapped our image inside of a `<div>`.  This is not completely necessary, but helpful if we wanted to add some custom CSS to control the width of an image.  Because image tags are inline elements by default, you generally want to wrap your `<Img />` component in some block level element like a `<p>`.
+
+Then in the `<Img />` component we pass in the fluid version of the image we requested on the fluid prop.  Remember, to get a fluid image that scales to the full width of it's container, you must query the fluid version of the image *and* pass that data into the `fluid` props.
+
+Next we will add our fixed Gatsby logo within our paragraphs.
+
+```
+<p>
+  Fusce feugiat gravida magna nec accumsan. Quisque at mi lacinia, vulputate
+  urna quis, ultricies ex. Maecenas mattis sapien et enim congue, nec rutrum
+  risus commodo.
+</p>
+<Img
+  style={{ float: `right`, margin: `0 0 10px 10px` }}
+  fixed={data.gatsbyIcon.childImageSharp.fixed}
+/>
+<p>
+  Donec ante diam, ullamcorper non accumsan et, bibendum vel sapien.
+  Phasellus pharetra mi venenatis orci lobortis tincidunt ut ut lorem.
+  Phasellus iaculis, odio quis blandit maximus, velit lacus semper quam, non
+  vestibulum tortor purus at lacus.
+</p>
+```
+
+Notice that we are applying some CSS to our `<Img />` component to float it right and give it some margins.  You could also apply a `className` prop if you wanted to add a class to the image wrapper on the page.
+
+Go ahead and run `gatsby develop` to test.  You should see something like the image below.
+
+![Fluid image and fixed image in a page](images/05-image-page-test.png) 
+
+Before you move on, try customizing your image queries like the following:
+
+```
+canyons: file(
+  relativePath: { eq: "alan-carrillo-HIghIy9i0aY-unsplash.jpg" }
+) {
+  childImageSharp {
+    fluid(
+      maxWidth: 500
+      traceSVG: { background: "#fed49e", color: "#f48e67" }
+    ) {
+      ...GatsbyImageSharpFluid_withWebp_tracedSVG
+    }
+  }
+}
+gatsbyIcon: file(relativePath: { eq: "gatsby-icon.png" }) {
+  childImageSharp {
+    fixed(
+      width: 200
+      height: 200
+      traceSVG: { background: "white", color: "#a67ecf" }
+    ) {
+      ...GatsbyImageSharpFixed_withWebp_tracedSVG
+    }
+  }
+}
+```
+
+This will let you see the traced SVG in action and show you how to set custom colors for the background and trace color so they look best for your images.
+
+![Custom colors with a traced SVG](images/05-traved-svg-component.png)
+
+*NOTE: Most browser developer tools let you mimic different connection speeds under the Network tab so you can see the full effect of the image loading.*
+
+![The Network option for mimicking a slower browser speed](images/05-network.png)
+
+Now that we looked at how to query and load images with Gatsby Image on page components, let's look at non page components because the query is slightly different.
+
+## Using Gatsby Image in a Non-Page Component
+
+Page components are those in the `/src/pages/` directory that automatically create pages in Gatsby.  Non page components are usually stored in the `/src/components/` folder and included in other components.  They do not automatically create pages.
+
+Queries in non-page components work a little differently and require something called a "static query."  Our actually GraphQL query will look the same, but the way we set it up and the way it works behind the scenes is a little different.
+
+What we will do is look at how to add the Gatsby logo to our `<Header />` component.
+
+Open the `/src/components/header.js` file and import `useStaticQuery` and `graphql` from `gatsby`, as well as `Img` from `gatsby-image`.
+
+```
+import React from "react"
+import PropTypes from "prop-types"
+import { Link, useStaticQuery, graphql } from "gatsby"
+import Img from "gatsby-image"
+```
+
+Now you want to modify your Header function to include curly braces instead of just returning an element:
+
+```
+const Header = ({ siteTitle }) => {
+  return (
+    <header
+      style={{
+        background: `rebeccapurple`,
+        marginBottom: `1.45rem`,
+      }}
+    >
+    // Everything else stays the same
+    </header>
+  ) 
+}
+```
+
+Now we can add our static query for the image inside of the component.  This is one of the way static queries are different than dynamic page queries.  They go inside of our component function, rather than outside.
+
+We will add in a new image called `Gatsby_Monogram_White.png` from the Gatsby logo and brand guide.  You can find the image in the completed files for this chapter in the `src/images/` directory.
+
+This is what our static query will look like:
+
+```
+const Header = ({ siteTitle }) => {
+  const data = useStaticQuery(graphql`
+    query {
+      logo: file(relativePath: { 
+        eq: "Gatsby_Monogram_White.png" 
+      }) {
+        childImageSharp {
+          fixed(width: 44, height: 44) {
+            ...GatsbyImageSharpFixed
+          }
+        }
+      }
+    }
+  `)
+
+  return (
+    // Everything else stays the same
+  )
+```
+
+Notice that we are assigning the static query to the `data` object.  Then we search for the `Gatsby_Monogram_White.png` file and set it to a fixed height and width of `44px`.
+
+This image will now be available to us as the following:
+
+```
+data.logo.childImageSharp.fixed
+```
+
+Next we will add the image using the `<Img />` component.  Come down and add the image right before the `<h1>`.
+
+```
+<Img
+  style={{ float: `left`, marginRight: `10px` }}
+  fixed={data.logo.childImageSharp.fixed}
+/>
+```
+
+This will add the fixed image as well as float it to the left and provide it with some right margin. 
+
+Your result should look like this:
+
+![The header with the fixed size logo](images/05-static-query.png)
+
+We could easily add more image queries to our static query in the way we did in our page component.
+
+You will use static queries in this way anytime you need an image in a non-page component.
+
+This gives us some solid examples and starting points for when we need to include images in our Gatsby templates and components.
+
+Now let's look at how we can use images in our markdown content.
+
+
+## Adding Featured Images to Markdown Frontmatter
+
+What we will do in this step is add a featured image to each markdown blog post as part of the frontmatter.
+
+First, we will setup the images themselves.  Create an `images` directory inside of the `content` directory.  You can find a collection of five images to use in the final code for this chapter:
+
+```
+jerry-wang-5V47P1bPXRI-unsplash.jpg
+niko-photos-tGTVxeOr_Rs-unsplash.jpg
+peter-conlan-axYF1KFjoDY-unsplash.jpg
+riccardo-chiarini-2VDa8bnLM8c-unsplash.jpg
+woo-hyeon-kim-1FQkplvYPSo-unsplash.jpg
+```
+
+Then open up each markdown blog post and add a link to one of the images link this:
+
+```
+---
+slug: "hello-world"
+date: "2020-05-11"
+title: "Hello World"
+excerpt: "A hello world post."
+featuredImage: "../images/jerry-wang-5V47P1bPXRI-unsplash.jpg"
+---
+```
+
+Now we need to configure our `gatsby-source-filesystem` configurations to know to look inside our `/content/images/` directory for files.
+
+Open up the `gatsby-config.js` file and add the following:
+
+```
+{
+  resolve: `gatsby-source-filesystem`,
+  options: {
+    name: `contentImages`,
+    path: `${__dirname}/content/images`,
+  },
+},
+```
+
+Now we will query the featured image inside our `/src/templates/post.js` file.
+
+```
+export const postQuery = graphql`
+  query($slug: String!) {
+    markdownRemark(frontmatter: { slug: { eq: $slug } }) {
+      html
+      frontmatter {
+        date(formatString: "MMMM DD, YYYY")
+        title
+        featuredImage {
+          childImageSharp {
+            fluid(maxWidth: 800) {
+              ...GatsbyImageSharpFluid
+            }
+          }
+        }
+      }
+    }
+  }
+`
+```
+
+Notice that we have access to `childImageSharp` and all of its features for the `featuredImage`.
+
+Now, above the main content in our `PostTemplate` component we can add our image.
+
+```
+<Layout>
+  <SEO title={frontmatter.title} />
+  <p style={{ fontSize: `70%` }}>
+    Published {frontmatter.date}
+  </p>
+  <Img fluid={frontmatter.featuredImage.childImageSharp.fluid} />
+  <div dangerouslySetInnerHTML={{ __html: html }} />
+</Layout>
+```
+
+This should result in having your featured image display above a post.
+
+![Featured image from markdown frontmatter](images/05-featured-image.png)
+
+Now let's turn our attention to how to include images in our markdown content directly.
+
+## Using Inline Images in Markdown
+
+When it comes to adding images within our markdown files we have to take an additional configuration step.
+
+First, install the `gatsby-remark-images` plugin.  This will allow Gatsby to display markdown images using Gatsby Image automatically.
+
+Make sure the development server is off and run the following command:
+
+```
+npm install gatsby-remark-images 
+```
+
+Then come into the `gatsby-config.js` file and change the following:
+
+```
+`gatsby-transformer-remark`
+```
+
+To this:
+
+```
+{
+  resolve: `gatsby-transformer-remark`,
+  options: {
+    plugins: [
+      {
+        resolve: `gatsby-remark-images`,
+        options: {
+          maxWidth: 960,
+        },
+      },
+    ],
+  },
+},
+```
+
+Now Gatsby will automatically convert our markdown images into Gatsby images!
+
+Add the following image to your `/content/images/` folder (you can find it in the completed files for the chapter:
+
+```
+aaron-burden-GVnUVP8cs1o-unsplash.jpg
+```
+
+Then add several paragraphs of lorem ipsum dummy text to the `20200511-hello-world.md`.  You can copy this dummy text from an online lorem ipsum generator or from the completed files.
+
+Then display the image between one of the paragraphs of text using the default markdown image syntax.
+
+```
+Ultricies mi quis hendrerit dolor magna eget. Nisi vitae suscipit tellus mauris a diam maecenas. Habitasse platea dictumst vestibulum rhoncus est. Volutpat sed cras ornare arcu dui vivamus arcu felis bibendum. Ultrices dui sapien eget mi. Cursus turpis massa tincidunt dui ut ornare lectus sit. Sed libero enim sed faucibus turpis in eu mi bibendum.
+
+![Image alt](../images/aaron-burden-GVnUVP8cs1o-unsplash.jpg)
+
+Proin sagittis nisl rhoncus mattis rhoncus urna. Nunc non blandit massa enim nec dui nunc mattis. Diam maecenas ultricies mi eget. Nisl suscipit adipiscing bibendum est ultricies integer quis auctor. Aliquet nec ullamcorper sit amet risus nullam eget felis. 
+```  
+
+You can now restart your development server and you should see the image display on the page stretching to the full width.
+
+![Inline image in a markdown post](images/05-markdown-image-line.png)
+
+While this is great you will notice that the image displays the full width.  In order to display images of different widths or float them in the page we will need to take a different approach.
+
+To style our images in our markdown posts we will have to use MDX.
+
+## Styling Images in Markdown with MDX
+
+MDX is markdown that allows the use of JSX and React components.  This can allow for powerfully styling and laying out pages in Markdown.
+
+To get this setup, stop the server and install the following:
+
+```
+npm install gatsby-plugin-mdx @mdx-js/mdx @mdx-js/react
+```
+
+Then update your `gatsby-config.js` file to include the following:
+
+```
+{
+  resolve: `gatsby-plugin-mdx`,
+  options: {
+    extensions: [`.mdx`, `.md`],
+  },
+},
+```
+
+This will let us use JSX and React components in our markdown files.  Usually MDX files require the extension `.mdx`.  This configuration will let us use the normal `.md` extension that we have been using so far.
+
+Next we will need a new image to add to our markdown post.  Use the `pixpoetry-oI7OWlsOCGU-unsplash.jpg` from the completed files and add it to the `/content/images/` directory.
+
+Then in your `20200511-hello-world.md` post add the following code between two of the paragraphs of text.
+
+```
+<div 
+  className="right-align" 
+  style="float: left; width: 200px; margin-right: 15px;"
+>
+  <img src="../images/pixpoetry-oI7OWlsOCGU-unsplash.jpg" />
+</div>
+```
+
+This will provide you with an image that floats to the left of the page.
+
+![Floated inline image with markdown](images/05-float-images.png)
+
+We can use this approach for styling images in markdown, but at a certain point you might want to look into importing React components.  We will look at adding importing React components into our MDX markdown in the next chapter.
+
+## Next Steps
+
+At this point we have learned a lot about Gatsby.  In fact, we know almost everything we need to launching production ready sites with Gatsby.
+
+In the next chapter we will look at how to add more dynamic features to our sites like contact forms, comments newsletter sign up forms.
+
+From there we will go over how to deploy Gatsby sites and we're ready to go!
