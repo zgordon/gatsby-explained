@@ -1,14 +1,15 @@
-# Gatsby Plugins
+# Extending Gatsby with Plugins and Packages
 
 We have actually already looked at a number of Gatsby Plugins in this book.  However, most of these plugins helped with core functionality with our site, like the ability to read files or process images.
 
-In this chapter we will look at various plugins that help us add more dynamic functionality to our Gatsby sites.  This will include the following functionality:
+In this chapter we will look at various plugins and packages that help us add more dynamic functionality to our Gatsby sites.  
 
-1. Contact Forms
-2. Newsletter Signup Form
-3. Comments
-4. Social Sharing Buttons
-5. Tracking Analytics
+This will include the following functionality:
+
+- Contact Forms
+- Newsletter Signup Form
+- Comments
+- Tracking Analytics
 
 For each feature we cover, several options exist.  Once you learn how to use the specific plugins we use in this chapter it will be easy for you to switch to alternative solutions.
 
@@ -128,5 +129,184 @@ To start, install the following package:
 npm install react-mailchimp-form
 ```
 
-Now open the `/src/components/layout.js` 
+Now open the `/src/components/layout.js`  file and import the Mailchimp component from the package we just installed:
+
+```
+import Mailchimp from "react-mailchimp-form"
+```
+
+Then we can setup the component inside of our `<footer>` like so:
+
+```
+<footer>
+  <hr />
+  <h4>Sign Up for the Newsletter</h4>
+  <Mailchimp
+    action="https://XXXXXXXX.us4.list-manage.com/subscribe/post?u=YYYYYYYYYYYY&id=ZZZZZZZZZZZ"
+    fields={[
+      {
+        name: "EMAIL",
+        placeholder: "Email",
+        type: "email",
+        required: true,
+      },
+    ]}
+  />
+  © {new Date().getFullYear()}, Built with
+  {` `}
+  <a href="https://www.gatsbyjs.org">Gatsby</a>
+</footer>
+```
+
+The most important part of this is the action URL.  This is unique for your Mailchimp account.  To get this URL do the following:
+
+1. Login to your Mailchimp account
+2. Click on "Audience"
+3. Then click on the "Signup Forms" tab
+4. Select "Embedded Forms"
+5. Look in the Copy/paste embed code for `<form action="YOURURL"`
+
+Use this URL in place of the dummy URL used above.
+
+Now when you start `gatsby-develop` you should see the newsletter signup form in the footer.
+
+![A successful submission of the Mailchimp signup form](images/06-mailchimp-signup.png)
+
+If you test the form it should work properly as well!  
+
+As mentioned, there are many different services that offer newsletter signup functionality.  Depending on what service you use the approach you need to take may differ slightly than with this example.
+
+## Adding Comments to a Gatsby Site
+
+There are two main approaches to adding comments to posts or pages with Gatsby.  The simplest approach is to use a third party service that includes a Gatsby plugin or easily embedded code.  
+
+The more complex approach involves building the forms and handling the submissions and republishing of the Gatsby site when comments are approved.  This approach is beyond the scope of this book, so we will go with the simpler approach.
+
+In this example we will use a comment service called "Disquss" because it is the simplest.  However, it is also one of the more bloated options and has been known to sell your data.  Although it is commonly used, it is worth exploring other options down the road.
+
+To begin, sign up for a free account at https://disqus.com.  Then, under your site's General Settings, look for your site `Shortname`.  It will look something like `your-site-name`.
+
+![The Disquss Shortname under General Settings](images/06-shortname.png)
+
+Now stop your development server and install the Disquss Gatsby Plugin with the following command:
+
+```
+npm install --save gatsby-plugin-disqus
+```
+
+Next we will configure out `gatsby-config.js` file to include the following:
+
+```
+{
+  resolve: `gatsby-plugin-disqus`,
+  options: {
+    shortname: `your-disqus-shortname`
+  }
+},
+```
+
+Make sure to add the correct Shortname for your site.
+
+Now we can update our `post.js` template to include the Disquss comment component.
+
+Open your `/src/templates/post.js` file and import the Disquss component at the top of the page.
+
+```
+import { Disqus } from 'gatsby-plugin-disqus'
+```
+
+Then add the following configuration variable inside of the `PostTemplate` function.
+
+```
+const PostTemplate = ({ data }) => {
+  const { frontmatter, body } = data.mdx
+  const disqusConfig = {
+    shortname: `your-site-shortname`,
+    config: { 
+       identifier: frontmatter.slug, 
+       title: frontmatter.title 
+     },
+  }
+  // Rest stays the same for now
+```
+
+This will require that you add the `slug` field to the `postQuery` at the bottom of the file.  Make sure to do that before proceeding.
+
+Finally you can include the `<Disqus />` component like so:
+
+```
+<Layout>
+  <SEO title={frontmatter.title} />
+  <p style={{ fontSize: `70%` }}>Published {frontmatter.date}</p>
+  <Img fluid={frontmatter.featuredImage.childImageSharp.fluid} />
+  <MDXRenderer>{body}</MDXRenderer>
+  <Disqus {...disqusConfig} />
+</Layout>
+```
+
+The configuration props are optional but recommended.  
+
+When you run your development server and look at a post now you will see the Disquss comments enabled.
+
+![Disquss comments added to the posts template](images/06-discuss.png)
+
+As mentioned, there are various comment options and each one has a slightly different configuration process.  You might look into  Commento, Staticman and Gittalk as other possible options.
+
+## Adding Tracking Analytics to a Gatsby Site
+
+Most sites today include tracking of some kind.  While Google Analytics is the most common, many site builders are switching away to less privacy invading options like Simple Analytics (https://simpleanalytics.com) or Matomo (https://matomo.org).
+
+Most tracking analytics just involves adding some simple JavaScript to the page, but we can still use one of the many Gatsby Plugins to make our setup process even easier.
+
+For this project we are going to install Google Analytics tracking simply because the other options are paid.  However, we do recommend exploring options besides Google Analytics for your Gatsby sites.
+
+To start you will need to get your Google Tracking ID, which you can find under your Account Settings > Property Settings.  It generally looks something like `UA-54516992-1`.
+
+Next, install the Google Analytics Gatsby Plugin with the following command (remember, you development server must be off to do this):
+
+```
+npm install --save gatsby-plugin-google-analytics
+```
+
+Next, open your `gatsby-config.js` file and add the following settings:
+
+```
+{
+  resolve: `gatsby-plugin-google-analytics`,
+  options: {
+    trackingId: "UA-54516992-1",
+    anonymize: true,
+    respectDNT: true,
+    head: false,
+  },
+},
+```
+
+This will configure the Google Analytics plugin so that it anonymizes IP addresses and respects "Do Not Track" requests. Additionally, it will make sure to load the analytics code at the bottom of the page rather than in the header.
+
+Make sure to add in the tracking ID for your site.
+
+The Google Analytics plugin is disabled when running `gatsby develop`.  So in order to test you will need to stop your server and run the following command:
+
+```
+gatsby build
+``` 
+
+Once that is complete, start the Gatsby server to run the production version of your site.
+
+```
+gatsby serve 
+```
+
+This should start your production site on `localhost:9000`.  When you open up the web inspector and search for "google" you will find your analytics code embedded below the main content of the site.
+
+![The Google Analytics tracking code visible in the production build of your Gatsby site](images/06-google-analytics.png)
+
+Now you have analytics up and running on your site.  As mentioned, we do suggest exploring some of the Google Analytics alternatives like Simple Analytics and Matomo.
+
+## Next Steps
+
+At this point in our learning process we have learned the basics of setting up and building sites with Gatsby as well as how to extend it with plugins and packages.
+
+We are now ready to look at how to launch our Gatsby sites.  In the next chapter we will explore how to deploy production ready Gatsby sites.
 

@@ -39,7 +39,7 @@ const Layout = ({ children }) => {
           <hr />
           <h4>Sign Up for the Newsletter</h4>
           <Mailchimp
-            action="https://xoltal.us4.list-manage.com/subscribe/post?u=822f33bc579e8f9aa16a3de36&id=3ae11abf63"
+            action="https://REPLACE.us4.list-manage.com/subscribe/post?u=REPLACE&id=REPLACE"
             fields={[
               {
                 name: "EMAIL",

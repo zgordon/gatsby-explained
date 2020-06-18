@@ -8,6 +8,21 @@ module.exports = {
     `gatsby-plugin-react-helmet`,
     `gatsby-plugin-arengu-forms`,
     {
+      resolve: `gatsby-plugin-disqus`,
+      options: {
+        shortname: `your-disqus-shortname`,
+      },
+    },
+    {
+      resolve: `gatsby-plugin-google-analytics`,
+      options: {
+        trackingId: "UA-3242605-51",
+        anonymize: true,
+        respectDNT: true,
+        head: false,
+      },
+    },
+    {
       resolve: `gatsby-plugin-mdx`,
       options: {
         extensions: [`.mdx`, `.md`],
